@@ -45,7 +45,20 @@ edit generated package indexes by hand.
   `/usr/share/keyrings/stackry-packages.gpg`.
 - The APT source uses `signed-by=/usr/share/keyrings/stackry-packages.gpg`.
 
-## Status
+## Publishing
 
-Initial package hosting scaffold. Publishing automation and signing key
-material are still pending.
+`scripts/publish-apt-repo.sh` publishes `stackry-cli_*.deb` files into the
+local APT tree, regenerates package indexes, exports the public signing key,
+and signs the Release metadata.
+
+The `Publish Stackry CLI` workflow downloads package artifacts from a
+`stackry/stackry-vision` workflow run, signs the APT repository, and commits the
+generated repository files to `main`.
+
+Required repository secrets:
+
+```text
+STACKRY_APT_GPG_PRIVATE_KEY
+STACKRY_APT_GPG_PASSPHRASE
+STACKRY_APT_GPG_KEY_ID
+```
