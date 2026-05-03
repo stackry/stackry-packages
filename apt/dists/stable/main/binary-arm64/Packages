@@ -1,0 +1,15 @@
+Package: stackry-cli
+Version: 0.0.0+sha.f7093dd
+Architecture: arm64
+Maintainer: Stackry <engineering@stackry.com>
+Installed-Size: 6247
+Filename: pool/main/s/stackry-cli/stackry-cli_0.0.0+sha.f7093dd_arm64.deb
+Size: 3431158
+MD5sum: a0764fa6603715056e8424187fed33d5
+SHA1: 7495ed10e12bb544dc6c2c90d40e75ceb6640583
+SHA256: 66e15c29b9a24b0b7970b857fdcb5b87cee3b9fac553bf06a2f07c9c1db51647
+Section: admin
+Priority: optional
+Homepage: https://github.com/stackry/stackry-vision
+Description: Stackry station appliance CLI
+

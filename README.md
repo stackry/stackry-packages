@@ -62,3 +62,8 @@ STACKRY_APT_GPG_PRIVATE_KEY
 STACKRY_APT_GPG_PASSPHRASE
 STACKRY_APT_GPG_KEY_ID
 ```
+
+When `stackry/stackry-vision` is private, package publishing also needs a
+`STACKRY_VISION_ARTIFACT_TOKEN` secret that can read workflow artifacts from
+that source repository. Prefer a GitHub App installation token or fine-grained
+automation token scoped to `stackry/stackry-vision` Actions read access.

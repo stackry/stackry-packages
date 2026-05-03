@@ -1,0 +1,32 @@
+Architectures: amd64 arm64
+Codename: stable
+Components: main
+Date: Sun, 03 May 2026 18:25:00 +0000
+Description: Stackry public package repository
+Label: Stackry
+Origin: Stackry
+Suite: stable
+MD5Sum:
+ 96aa952a55922d519c5cdec1f3c5fc3e              191 Release
+ 6b3f308f355308fe812eebbf6314b950              514 main/binary-amd64/Packages
+ a008cab9b30db114c5cb5895869cefd8              361 main/binary-amd64/Packages.gz
+ dff8e9cc4eaf489d36cbb455ce1f2ce2              514 main/binary-arm64/Packages
+ 3ae1ae6c536d832aca8488014875d71a              364 main/binary-arm64/Packages.gz
+SHA1:
+ 4059edfdfe4b4c4fe8b5dabf03b2c5d7e4ec1f90              191 Release
+ 4c8f5253175be3071a95e598f0a683a46513eb5a              514 main/binary-amd64/Packages
+ ba89c4a9f586516e4ffd979a78b1a58fb247cc57              361 main/binary-amd64/Packages.gz
+ 156bc8a88c4c43ae3962a3e6e4dba06d227683c8              514 main/binary-arm64/Packages
+ 6ff002b874b1ba5dca068d0f7bd1efc99cff9d27              364 main/binary-arm64/Packages.gz
+SHA256:
+ b2069bcf9b5b1833b9c416ffb3005a42732b15ba64ea47a97fdd2a83c730f9e9              191 Release
+ d9658688340142d5fcd73d7dc2288f1eca70211336c7d3c0f4d924d96c8a1002              514 main/binary-amd64/Packages
+ 57ee3bad96af2bc8771f3446942914a1d6a197439e53dba2f537cd4971085dda              361 main/binary-amd64/Packages.gz
+ 9755a02cf52a6c543a7a9f3344273dd8bf5b7beb1017545797d8887ac489e6b6              514 main/binary-arm64/Packages
+ 6d8c4da6dcc6dd76c3b193518e8e9b89b3f25d1c3534ebb6168c0f660d408717              364 main/binary-arm64/Packages.gz
+SHA512:
+ f87e12999edc49a689c928201cd6ec1b97b34f143aca2d9ec0587482197038cd3a8896a412ca5d585a84bb4cc52a8b45254dd5b2c8bfa9dd1d2da6e5ca89d407              191 Release
+ b1f7a438ae68e3631ee52848461bfacc30a7b55a49d5d40dffb30df7b1de8cc59c2b4d729197d16c20abd05e2d3af5525761fc9dcaab8736c2d67b93eb068418              514 main/binary-amd64/Packages
+ e9384710321444c0e83a1a14307e18c7e4a5e8125c8eac3a73a96372a7291f1a4de3776f504a94d15b119456272558d6f751c60800e44a276496b8f244c25994              361 main/binary-amd64/Packages.gz
+ 5333a3326a9b2a6166f0ba019a4e64111692e68f8e03521d5128a9b5b1a544782aa46183636d6a3fd415e1063d3e00b13c55f0bbb0c29b355b0314f38370fb59              514 main/binary-arm64/Packages
+ 19a7d7504501e08565a6d7b75c517ae676382e9a6e3d9c102b49ef38b0e3c243d025c924b5964db68c0cd9b08dab0e1ab6c764175630141ead1fd2ad56ebe16b              364 main/binary-arm64/Packages.gz
