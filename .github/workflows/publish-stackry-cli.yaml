@@ -1,0 +1,139 @@
+name: Publish Stackry CLI
+
+on:
+  workflow_dispatch:
+    inputs:
+      stackry_vision_run_id:
+        description: "GitHub Actions run id from stackry/stackry-vision that produced stackry-cli artifacts"
+        required: true
+        type: string
+      codename:
+        description: "APT distribution codename"
+        required: true
+        type: string
+        default: stable
+      component:
+        description: "APT component"
+        required: true
+        type: string
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish stackry-cli package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out package repository
+        uses: actions/checkout@v4
+
+      - name: Install Debian repository tools
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+          sudo apt-get install -y apt-utils dpkg-dev gnupg gzip
+
+      - name: Download stackry-cli artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist/artifacts dist/debs
+
+          gh run download "${STACKRY_VISION_RUN_ID}" \
+            --repo stackry/stackry-vision \
+            --pattern 'stackry-cli-*' \
+            --dir dist/artifacts
+
+          find dist/artifacts -type f -name 'stackry-cli_*.deb' -exec cp {} dist/debs/ \;
+
+          deb_count="$(find dist/debs -type f -name 'stackry-cli_*.deb' | wc -l | tr -d ' ')"
+          if [[ "${deb_count}" -lt 2 ]]; then
+            echo "Expected at least arm64 and amd64 stackry-cli debs, found ${deb_count}." >&2
+            find dist/artifacts -maxdepth 3 -type f -print >&2
+            exit 1
+          fi
+
+      - name: Import package signing key
+        shell: bash
+        env:
+          STACKRY_APT_GPG_PRIVATE_KEY: ${{ secrets.STACKRY_APT_GPG_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${STACKRY_APT_GPG_PRIVATE_KEY}" ]]; then
+            echo "STACKRY_APT_GPG_PRIVATE_KEY secret is required." >&2
+            exit 1
+          fi
+
+          install -d -m 0700 "${HOME}/.gnupg"
+          printf '%s\n' "${STACKRY_APT_GPG_PRIVATE_KEY}" | gpg --batch --import
+
+          gpg --batch --list-secret-keys --with-colons
+
+      - name: Publish APT repository files
+        shell: bash
+        env:
+          GPG_PASSPHRASE: ${{ secrets.STACKRY_APT_GPG_PASSPHRASE }}
+          STACKRY_APT_GPG_KEY_ID: ${{ secrets.STACKRY_APT_GPG_KEY_ID }}
+        run: |
+          set -euo pipefail
+
+          gpg_key="${STACKRY_APT_GPG_KEY_ID}"
+          if [[ -z "${gpg_key}" ]]; then
+            gpg_key="$(gpg --batch --list-secret-keys --with-colons \
+              | awk -F: '$1 == "fpr" {print $10; exit}')"
+          fi
+
+          if [[ -z "${gpg_key}" ]]; then
+            echo "No GPG signing key available after import." >&2
+            exit 1
+          fi
+
+          scripts/publish-apt-repo.sh \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --input-dir dist/debs \
+            --codename "${{ inputs.codename }}" \
+            --component "${{ inputs.component }}" \
+            --gpg-key "${gpg_key}"
+
+      - name: Validate published repository
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f apt/stackry-packages.gpg
+          test -f "apt/dists/${{ inputs.codename }}/InRelease"
+          test -f "apt/dists/${{ inputs.codename }}/Release"
+          test -f "apt/dists/${{ inputs.codename }}/Release.gpg"
+          test -s "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-amd64/Packages.gz"
+          test -s "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-arm64/Packages.gz"
+          grep -q '^Package: stackry-cli$' \
+            "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-amd64/Packages"
+          grep -q '^Package: stackry-cli$' \
+            "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-arm64/Packages"
+
+      - name: Commit package repository update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add apt
+
+          if git diff --cached --quiet; then
+            echo "APT repository is already up to date."
+            exit 0
+          fi
+
+          git commit -m "publish stackry-cli from stackry-vision run ${{ inputs.stackry_vision_run_id }}"
+          git push
