@@ -40,7 +40,7 @@ jobs:
       - name: Download stackry-cli artifacts
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN != '' && secrets.STACKRY_VISION_ARTIFACT_TOKEN || github.token }}
           STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
         run: |
           set -euo pipefail
