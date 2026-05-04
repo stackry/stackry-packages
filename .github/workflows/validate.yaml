@@ -30,8 +30,14 @@ jobs:
 
           bash -n install.sh
           bash -n scripts/publish-apt-repo.sh
+          bash -n scripts/resolve-stackry-vision-run.sh
           bash -n tests/test_publish_apt_repo.sh
+          bash -n tests/test_resolve_stackry_vision_run.sh
 
       - name: Run APT publish test
         shell: bash
-        run: tests/test_publish_apt_repo.sh
+        run: |
+          set -euo pipefail
+
+          tests/test_publish_apt_repo.sh
+          tests/test_resolve_stackry_vision_run.sh

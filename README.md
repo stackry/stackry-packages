@@ -89,6 +89,16 @@ workflow produces package artifacts. Required automation credentials are kept
 as repository secrets and should grant only signing and read-artifact access
 needed for publishing.
 
+The publish workflow is a reconciler for the public APT repo:
+
+- `repository_dispatch` with event type `stackry-cli-package-ready` publishes
+  the `stackry/stackry-vision` run id provided by the source build;
+- manual runs publish an explicit `stackry_vision_run_id` when support needs
+  to republish or recover.
+
+If the latest source run is already present in `apt/`, the workflow exits
+without committing a new package index.
+
 The package publisher runs in this public repository, so its default
 `GITHUB_TOKEN` cannot read private `stackry/stackry-vision` workflow artifacts.
 Configure a GitHub App for publishing before running
