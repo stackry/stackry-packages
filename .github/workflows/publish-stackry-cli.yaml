@@ -40,13 +40,13 @@ jobs:
       - name: Validate GitHub App configuration
         shell: bash
         env:
-          STACKRY_PACKAGES_PUBLISHER_APP_ID: ${{ vars.STACKRY_PACKAGES_PUBLISHER_APP_ID }}
+          STACKRY_PACKAGES_PUBLISHER_CLIENT_ID: ${{ vars.STACKRY_PACKAGES_PUBLISHER_CLIENT_ID }}
           STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY: ${{ secrets.STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY }}
         run: |
           set -euo pipefail
 
-          if [[ -z "${STACKRY_PACKAGES_PUBLISHER_APP_ID}" ]]; then
-            echo "::error title=Missing STACKRY_PACKAGES_PUBLISHER_APP_ID::Configure this repository variable with the Stackry package publisher GitHub App id."
+          if [[ -z "${STACKRY_PACKAGES_PUBLISHER_CLIENT_ID}" ]]; then
+            echo "::error title=Missing STACKRY_PACKAGES_PUBLISHER_CLIENT_ID::Configure this repository variable with the Stackry package publisher GitHub App client id."
             exit 1
           fi
 
@@ -59,7 +59,7 @@ jobs:
         id: artifact-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.STACKRY_PACKAGES_PUBLISHER_APP_ID }}
+          client-id: ${{ vars.STACKRY_PACKAGES_PUBLISHER_CLIENT_ID }}
           private-key: ${{ secrets.STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY }}
           owner: stackry
           repositories: stackry-vision
