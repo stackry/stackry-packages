@@ -37,10 +37,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y apt-utils dpkg-dev gnupg gzip
 
+      - name: Validate private artifact access
+        shell: bash
+        env:
+          STACKRY_VISION_ARTIFACT_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN }}
+          STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${STACKRY_VISION_ARTIFACT_TOKEN}" ]]; then
+            echo "::error title=Missing STACKRY_VISION_ARTIFACT_TOKEN::This public package workflow needs a GitHub Actions secret that can read artifacts from private repo stackry/stackry-vision. Station appliances do not use this token."
+            exit 1
+          fi
+
+          GH_TOKEN="${STACKRY_VISION_ARTIFACT_TOKEN}" gh run view "${STACKRY_VISION_RUN_ID}" \
+            --repo stackry/stackry-vision \
+            --json databaseId,status,conclusion,url
+
       - name: Download stackry-cli artifacts
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN != '' && secrets.STACKRY_VISION_ARTIFACT_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN }}
           STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
         run: |
           set -euo pipefail

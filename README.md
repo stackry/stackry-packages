@@ -89,6 +89,13 @@ workflow produces package artifacts. Required automation credentials are kept
 as repository secrets and should grant only signing and read-artifact access
 needed for publishing.
 
+The package publisher runs in this public repository, so its default
+`GITHUB_TOKEN` cannot read private `stackry/stackry-vision` workflow artifacts.
+Configure `STACKRY_VISION_ARTIFACT_TOKEN` as a repository secret before running
+`.github/workflows/publish-stackry-cli.yaml`. Prefer a GitHub App installation
+token or narrowly scoped automation token that can read Actions artifacts from
+`stackry/stackry-vision`; do not put this token on station appliances.
+
 Validate local changes before opening a pull request:
 
 ```bash
