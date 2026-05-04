@@ -97,7 +97,7 @@ Configure a GitHub App for publishing before running
 - GitHub App repository permission: `Actions: Read-only`
 - GitHub App installation repository: `stackry/stackry-vision`
 - `stackry/stackry-packages` repository variable:
-  `STACKRY_PACKAGES_PUBLISHER_APP_ID`
+  `STACKRY_PACKAGES_PUBLISHER_CLIENT_ID`
 - `stackry/stackry-packages` repository secret:
   `STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY`
 
