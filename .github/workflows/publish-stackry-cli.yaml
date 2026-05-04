@@ -1,6 +1,9 @@
 name: Publish Stackry CLI
 
 on:
+  repository_dispatch:
+    types:
+      - stackry-cli-package-ready
   workflow_dispatch:
     inputs:
       stackry_vision_run_id:
@@ -25,6 +28,10 @@ jobs:
   publish:
     name: Publish stackry-cli package
     runs-on: ubuntu-latest
+    env:
+      APT_CODENAME: ${{ github.event.inputs.codename || github.event.client_payload.codename || 'stable' }}
+      APT_COMPONENT: ${{ github.event.inputs.component || github.event.client_payload.component || 'main' }}
+      STACKRY_VISION_RUN_ID_INPUT: ${{ github.event.inputs.stackry_vision_run_id || github.event.client_payload.stackry_vision_run_id || '' }}
     steps:
       - name: Check out package repository
         uses: actions/checkout@v4
@@ -63,12 +70,25 @@ jobs:
           private-key: ${{ secrets.STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY }}
           owner: stackry
           repositories: stackry-vision
+          permission-actions: read
+
+      - name: Resolve stackry-vision run
+        id: vision-run
+        shell: bash
+        env:
+          STACKRY_VISION_RUN_ID: ${{ env.STACKRY_VISION_RUN_ID_INPUT }}
+        run: |
+          set -euo pipefail
+
+          run_id="$(scripts/resolve-stackry-vision-run.sh)"
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+          echo "Publishing stackry-cli artifacts from stackry/stackry-vision run ${run_id}."
 
       - name: Validate private artifact access
         shell: bash
         env:
           GH_TOKEN: ${{ steps.artifact-token.outputs.token }}
-          STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
+          STACKRY_VISION_RUN_ID: ${{ steps.vision-run.outputs.run_id }}
         run: |
           set -euo pipefail
 
@@ -80,7 +100,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ steps.artifact-token.outputs.token }}
-          STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
+          STACKRY_VISION_RUN_ID: ${{ steps.vision-run.outputs.run_id }}
         run: |
           set -euo pipefail
 
@@ -139,8 +159,8 @@ jobs:
           scripts/publish-apt-repo.sh \
             --repo-root "${GITHUB_WORKSPACE}" \
             --input-dir dist/debs \
-            --codename "${{ inputs.codename }}" \
-            --component "${{ inputs.component }}" \
+            --codename "${APT_CODENAME}" \
+            --component "${APT_COMPONENT}" \
             --gpg-key "${gpg_key}"
 
       - name: Validate published repository
@@ -149,15 +169,15 @@ jobs:
           set -euo pipefail
 
           test -f apt/stackry-packages.gpg
-          test -f "apt/dists/${{ inputs.codename }}/InRelease"
-          test -f "apt/dists/${{ inputs.codename }}/Release"
-          test -f "apt/dists/${{ inputs.codename }}/Release.gpg"
-          test -s "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-amd64/Packages.gz"
-          test -s "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-arm64/Packages.gz"
+          test -f "apt/dists/${APT_CODENAME}/InRelease"
+          test -f "apt/dists/${APT_CODENAME}/Release"
+          test -f "apt/dists/${APT_CODENAME}/Release.gpg"
+          test -s "apt/dists/${APT_CODENAME}/${APT_COMPONENT}/binary-amd64/Packages.gz"
+          test -s "apt/dists/${APT_CODENAME}/${APT_COMPONENT}/binary-arm64/Packages.gz"
           grep -q '^Package: stackry-cli$' \
-            "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-amd64/Packages"
+            "apt/dists/${APT_CODENAME}/${APT_COMPONENT}/binary-amd64/Packages"
           grep -q '^Package: stackry-cli$' \
-            "apt/dists/${{ inputs.codename }}/${{ inputs.component }}/binary-arm64/Packages"
+            "apt/dists/${APT_CODENAME}/${APT_COMPONENT}/binary-arm64/Packages"
 
       - name: Commit package repository update
         shell: bash
@@ -174,5 +194,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "publish stackry-cli from stackry-vision run ${{ inputs.stackry_vision_run_id }}"
+          git commit -m "publish stackry-cli from stackry-vision run ${{ steps.vision-run.outputs.run_id }}"
           git push
