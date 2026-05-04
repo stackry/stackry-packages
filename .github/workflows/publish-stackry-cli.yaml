@@ -37,27 +37,49 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y apt-utils dpkg-dev gnupg gzip
 
+      - name: Validate GitHub App configuration
+        shell: bash
+        env:
+          STACKRY_PACKAGES_PUBLISHER_APP_ID: ${{ vars.STACKRY_PACKAGES_PUBLISHER_APP_ID }}
+          STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY: ${{ secrets.STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${STACKRY_PACKAGES_PUBLISHER_APP_ID}" ]]; then
+            echo "::error title=Missing STACKRY_PACKAGES_PUBLISHER_APP_ID::Configure this repository variable with the Stackry package publisher GitHub App id."
+            exit 1
+          fi
+
+          if [[ -z "${STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY}" ]]; then
+            echo "::error title=Missing STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY::Configure this repository secret with the Stackry package publisher GitHub App private key."
+            exit 1
+          fi
+
+      - name: Create private artifact token
+        id: artifact-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.STACKRY_PACKAGES_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: stackry
+          repositories: stackry-vision
+
       - name: Validate private artifact access
         shell: bash
         env:
-          STACKRY_VISION_ARTIFACT_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN }}
+          GH_TOKEN: ${{ steps.artifact-token.outputs.token }}
           STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
         run: |
           set -euo pipefail
 
-          if [[ -z "${STACKRY_VISION_ARTIFACT_TOKEN}" ]]; then
-            echo "::error title=Missing STACKRY_VISION_ARTIFACT_TOKEN::This public package workflow needs a GitHub Actions secret that can read artifacts from private repo stackry/stackry-vision. Station appliances do not use this token."
-            exit 1
-          fi
-
-          GH_TOKEN="${STACKRY_VISION_ARTIFACT_TOKEN}" gh run view "${STACKRY_VISION_RUN_ID}" \
+          gh run view "${STACKRY_VISION_RUN_ID}" \
             --repo stackry/stackry-vision \
             --json databaseId,status,conclusion,url
 
       - name: Download stackry-cli artifacts
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.STACKRY_VISION_ARTIFACT_TOKEN }}
+          GH_TOKEN: ${{ steps.artifact-token.outputs.token }}
           STACKRY_VISION_RUN_ID: ${{ inputs.stackry_vision_run_id }}
         run: |
           set -euo pipefail

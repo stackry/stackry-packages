@@ -91,10 +91,19 @@ needed for publishing.
 
 The package publisher runs in this public repository, so its default
 `GITHUB_TOKEN` cannot read private `stackry/stackry-vision` workflow artifacts.
-Configure `STACKRY_VISION_ARTIFACT_TOKEN` as a repository secret before running
-`.github/workflows/publish-stackry-cli.yaml`. Prefer a GitHub App installation
-token or narrowly scoped automation token that can read Actions artifacts from
-`stackry/stackry-vision`; do not put this token on station appliances.
+Configure a GitHub App for publishing before running
+`.github/workflows/publish-stackry-cli.yaml`:
+
+- GitHub App repository permission: `Actions: Read-only`
+- GitHub App installation repository: `stackry/stackry-vision`
+- `stackry/stackry-packages` repository variable:
+  `STACKRY_PACKAGES_PUBLISHER_APP_ID`
+- `stackry/stackry-packages` repository secret:
+  `STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY`
+
+The workflow uses the GitHub App private key only inside GitHub Actions to
+create a short-lived artifact-read token. Do not put this key or token on
+station appliances.
 
 Validate local changes before opening a pull request:
 
