@@ -84,49 +84,32 @@ install from GitHub Pages. Do not edit generated package indexes by hand.
 local APT tree, regenerates package indexes, exports the public signing key,
 and signs Release metadata.
 
-Publishing is normally done by GitHub Actions after the private
-`stackry/stackry-vision` workflow produces package artifacts. Required
-automation credentials are kept as repository variables/secrets and should
-grant only the narrow cross-repository access needed for the source-to-package
-handoff.
+Publishing is an explicit release step after the private `stackry/stackry-vision`
+workflow produces package artifacts. Required automation credentials are kept as
+repository variables/secrets and should grant only artifact-read access needed
+for publishing.
 
-The publish workflow is event-driven:
+Run `.github/workflows/publish-stackry-cli.yaml` manually with the
+`stackry/stackry-vision` Actions run id that produced the package artifacts.
 
-- `repository_dispatch` with event type `stackry-cli-package-ready` publishes
-  the `stackry/stackry-vision` run id provided by the source build;
-- manual runs publish an explicit `stackry_vision_run_id` when support needs
-  to republish or recover.
+This public repository reads the private source workflow artifacts and commits
+signed APT metadata. If the requested source run is already present in `apt/`,
+the workflow exits without committing a new package index.
 
-If the latest source run is already present in `apt/`, the workflow exits
-without committing a new package index.
-
-There are two GitHub token boundaries:
-
-1. `stackry/stackry-vision` dispatches the publish event to this repository
-   after the source package build succeeds.
-2. This public repository reads the private source workflow artifacts and
-   commits signed APT metadata.
-
-Use a GitHub App installed only on `stackry/stackry-vision` and
-`stackry/stackry-packages`. The app needs these repository permissions:
+Use a GitHub App installed only on `stackry/stackry-vision`. The app needs
+these repository permissions:
 
 - `Actions: Read-only`
-- `Contents: Read and write`
 - `Metadata: Read-only` (required by GitHub)
 
-Configure the source repository (`stackry/stackry-vision`) for dispatch:
-
-- repository variable: `STACKRY_PACKAGES_DISPATCHER_APP_ID`
-- repository secret: `STACKRY_PACKAGES_DISPATCHER_APP_PRIVATE_KEY`
-
-Configure this repository (`stackry/stackry-packages`) for artifact reading:
+Configure this repository for artifact reading:
 
 - repository variable: `STACKRY_PACKAGES_PUBLISHER_CLIENT_ID`
 - repository secret: `STACKRY_PACKAGES_PUBLISHER_APP_PRIVATE_KEY`
 
-The workflows use GitHub App private keys only inside GitHub Actions to create
-short-lived installation tokens. Do not put these keys or tokens on station
-appliances.
+The workflow uses the GitHub App private key only inside GitHub Actions to
+create a short-lived artifact-read token. Do not put this key or token on
+station appliances.
 
 Validate local changes before opening a pull request:
 
