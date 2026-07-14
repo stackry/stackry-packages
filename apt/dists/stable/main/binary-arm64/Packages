@@ -1,13 +1,13 @@
 Package: stackry-cli
-Version: 2026.7.4
+Version: 2026.7.5
 Architecture: arm64
 Maintainer: Stackry <engineering@stackry.com>
 Installed-Size: 11396
-Filename: pool/main/s/stackry-cli/stackry-cli_2026.7.4_arm64.deb
-Size: 6308364
-MD5sum: 766210983f12ef68ee8b7cdb3935934b
-SHA1: d9f75b14740ee36bb9737ce2fff290a5ffcfae02
-SHA256: 7f4094b8a775c961fdd86284e113d441c524b7a06e7e2176adc64d036640639e
+Filename: pool/main/s/stackry-cli/stackry-cli_2026.7.5_arm64.deb
+Size: 6308360
+MD5sum: 8b2431fe18a83ea222f7e94023ee6a76
+SHA1: e3258c14b7e8ba9af8bf11e7fb663c51e1fbc328
+SHA256: ba1ede93a6deb3c190b9bdd02c8846cadee691075992a82523288d0fbf7e1e45
 Section: admin
 Priority: optional
 Homepage: https://github.com/stackry/stackry-vision
